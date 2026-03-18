@@ -1,0 +1,23 @@
+# Visual Studio cache/options directory
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Bb]in/
+[Oo]bj/
+
+# NuGet Packages
+*.nupkg
+packages/
+!packages/build/
+!packages/packages.config
+
+# Mac/system files
+.DS_Store
+
+# Ignore SQL Server database files
+*.mdf
+*.ldf
