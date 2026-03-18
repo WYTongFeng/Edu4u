@@ -21,3 +21,5 @@ packages/
 # Ignore SQL Server database files
 *.mdf
 *.ldf
+/Edu2u/obj/Debug
+/Edu2u/obj
