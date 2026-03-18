@@ -3,68 +3,73 @@
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
     <div class="container mt-4 mb-5">
         
-        <div class="row mb-4">
+        <div class="row mb-5">
             <div class="col-12">
-                <div class="p-4 bg-info bg-opacity-10 rounded-3 border-start border-info border-4 shadow-sm">
-                    <h2 class="text-info fw-bold">Educator Dashboard 👨‍🏫</h2>
-                    <p class="fs-5 text-muted mb-0">Welcome back, <asp:Label ID="lblEducatorName" runat="server" CssClass="fw-bold"></asp:Label>! Here is an overview of your teaching activities.</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="row g-4 mb-5">
-            <div class="col-md-6">
-                <div class="card bg-white shadow-sm border-0 h-100 border-bottom border-primary border-3">
-                    <div class="card-body text-center py-4">
-                        <h1 class="display-4 fw-bold text-primary"><asp:Label ID="lblMyCoursesCount" runat="server" Text="0"></asp:Label></h1>
-                        <h5 class="text-muted mb-0">My Active Courses</h5>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-6">
-                <div class="card bg-white shadow-sm border-0 h-100 border-bottom border-success border-3">
-                    <div class="card-body text-center py-4">
-                        <h1 class="display-4 fw-bold text-success"><asp:Label ID="lblStudentCompletions" runat="server" Text="0"></asp:Label></h1>
-                        <h5 class="text-muted mb-0">Total Student Completions</h5>
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                    <div class="card-body p-5 position-relative text-white" style="background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);">
+                        <i class="fas fa-chalkboard-teacher position-absolute" style="font-size: 10rem; right: 5%; top: 50%; transform: translateY(-50%); opacity: 0.1;"></i>
+                        
+                        <div class="position-relative" style="z-index: 1;">
+                            <h2 class="fw-bold mb-2">Educator Portal</h2>
+                            <p class="fs-5 mb-0 text-white-50">Manage your course materials, assessments, and profile settings.</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <asp:Label ID="lblMessage" runat="server" CssClass="alert d-block" Visible="false"></asp:Label>
-
-        <div class="card shadow-sm border-0 mb-4">
-            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-                <span class="fw-bold">📚 My Uploaded Materials</span>
-                <a href="UploadContent.aspx" class="btn btn-sm btn-info text-white fw-bold">+ Upload New Material</a>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <asp:GridView ID="gvMyCourses" runat="server" CssClass="table table-hover mb-0 align-middle" 
-                        AutoGenerateColumns="False" GridLines="None">
-                        <HeaderStyle CssClass="table-light" />
-                        <Columns>
-                            <asp:BoundField DataField="Title" HeaderText="Course Title" ItemStyle-CssClass="fw-bold ps-4" HeaderStyle-CssClass="ps-4" />
-                            <asp:BoundField DataField="Category" HeaderText="Category" />
-                            <asp:TemplateField HeaderText="Material Status">
-                                <ItemTemplate>
-                                    <span class='<%# string.IsNullOrEmpty(Eval("ContentPath")?.ToString()) ? "badge bg-danger" : "badge bg-success" %>'>
-                                        <%# string.IsNullOrEmpty(Eval("ContentPath")?.ToString()) ? "No PDF Uploaded" : "Material Active" %>
-                                    </span>
-                                </ItemTemplate>
-                            </asp:TemplateField>
-                            <asp:BoundField DataField="CreatedAt" HeaderText="Created On" DataFormatString="{0:dd MMM yyyy}" />
-                        </Columns>
-                    </asp:GridView>
-
-                    <asp:Label ID="lblNoCourses" runat="server" CssClass="text-center text-muted w-100 d-block py-5" Visible="false">
-                        <h5 class="mb-3">You haven't created any courses yet.</h5>
-                        <p>Click the 'Upload New Material' button above to get started!</p>
-                    </asp:Label>
+        <div class="row g-4 justify-content-center">
+            
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0 rounded-4 educator-card">
+                    <div class="card-body p-4 p-xl-5 d-flex flex-column align-items-center text-center">
+                        <div class="icon-circle bg-primary bg-opacity-10 text-primary mb-4" style="width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-file-upload fs-2"></i>
+                        </div>
+                        <h4 class="card-title fw-bold">Upload Course</h4>
+                        <p class="card-text text-muted flex-grow-1">Create new modules, upload PDF notes, and manage your existing learning materials.</p>
+                        <a href="CourseManagement.aspx" class="btn btn-outline-primary w-100 mt-3 fw-bold rounded-pill stretched-link">Manage Courses</a>
+                    </div>
                 </div>
             </div>
-        </div>
 
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0 rounded-4 educator-card">
+                    <div class="card-body p-4 p-xl-5 d-flex flex-column align-items-center text-center">
+                        <div class="icon-circle bg-success bg-opacity-10 text-success mb-4" style="width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-tasks fs-2"></i>
+                        </div>
+                        <h4 class="card-title fw-bold">Upload Quiz</h4>
+                        <p class="card-text text-muted flex-grow-1">Design interactive assessments and add multiple-choice questions to your courses.</p>
+                        <a href="UploadContent.aspx" class="btn btn-outline-success w-100 mt-3 fw-bold rounded-pill stretched-link">Manage Quizzes</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card h-100 shadow-sm border-0 rounded-4 educator-card">
+                    <div class="card-body p-4 p-xl-5 d-flex flex-column align-items-center text-center">
+                        <div class="icon-circle bg-warning bg-opacity-10 text-warning mb-4" style="width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-user-edit fs-2"></i>
+                        </div>
+                        <h4 class="card-title fw-bold">Edit Profile</h4>
+                        <p class="card-text text-muted flex-grow-1">Update your professional details, contact information, and account password.</p>
+                        <a href="Profile.aspx" class="btn btn-outline-warning w-100 mt-3 fw-bold rounded-pill stretched-link text-dark border-warning">Manage Profile</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
     </div>
+
+    <style>
+        .educator-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .educator-card:hover {
+            transform: translateY(-8px); /* Lifts the card up slightly */
+            box-shadow: 0 1rem 3rem rgba(0,0,0,.15)!important; /* Deepens the shadow */
+        }
+    </style>
 </asp:Content>

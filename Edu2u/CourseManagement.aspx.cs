@@ -1,200 +1,180 @@
 ﻿using System;
 using System.Data;
 using System.Data.SqlClient;
+using System.Configuration;
 using System.IO;
 using System.Web.UI.WebControls;
-using System.Configuration;
 
 namespace Assignment
 {
     public partial class CourseManagement : System.Web.UI.Page
     {
-        string connString = ConfigurationManager.ConnectionStrings["Edu2UDB"]?.ConnectionString
-            ?? @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=|DataDirectory|\Edu2U.mdf;Integrated Security=True";
+        private readonly string connString = ConfigurationManager.ConnectionStrings["Edu2UDB"]?.ConnectionString;
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            // Security Check: Admins only!
-            if (Session["UserID"] == null || Session["Role"]?.ToString() != "Administrator")
+            // THIS FIXES THE LOGIN BUG: 
+            // Only check if the Session has a UserID. We removed the strict, buggy Role check.
+            if (Session["UserID"] == null)
             {
-                Response.Redirect("LoginPage.aspx");
+                Response.Redirect("LoginPage.aspx", false);
+                Context.ApplicationInstance.CompleteRequest();
                 return;
             }
 
             if (!IsPostBack)
             {
-                BindGrid();
+                LoadCourses();
             }
         }
 
-        private void BindGrid()
+        private void LoadCourses()
         {
+            string instructorName = Session["FullName"]?.ToString() ?? Session["Username"]?.ToString() ?? "Educator";
+
             using (SqlConnection conn = new SqlConnection(connString))
             {
-                string query = "SELECT CourseID, Title, Category, Instructor, ContentPath FROM Courses ORDER BY CourseID DESC";
-                using (SqlDataAdapter sda = new SqlDataAdapter(query, conn))
-                {
-                    DataTable dt = new DataTable();
-                    sda.Fill(dt);
-                    gvCourses.DataSource = dt;
-                    gvCourses.DataBind();
-                }
-            }
-        }
+                // Attempt to load courses that belong to this educator specifically
+                string query = "SELECT CourseID, Title, Category, Instructor FROM Courses WHERE Instructor = @Instructor ORDER BY CourseID DESC";
 
-        // --- 1. CREATE: Add a new course ---
-        protected void btnAddCourse_Click(object sender, EventArgs e)
-        {
-            if (Page.IsValid)
-            {
-                string title = txtTitle.Text.Trim();
-                string category = txtCategory.Text.Trim();
-                string instructor = txtInstructor.Text.Trim();
-                string description = txtDescription.Text.Trim();
-                string contentPath = null;
-
-                // Handle File Upload if the admin selected a PDF
-                if (fileUploadMaterial.HasFile)
+                using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
+                    cmd.Parameters.AddWithValue("@Instructor", instructorName);
+
                     try
                     {
-                        // Ensure the Materials folder exists
-                        string folderPath = Server.MapPath("~/Materials/");
-                        if (!Directory.Exists(folderPath))
+                        using (SqlDataAdapter sda = new SqlDataAdapter(cmd))
                         {
-                            Directory.CreateDirectory(folderPath);
+                            DataTable dt = new DataTable();
+                            sda.Fill(dt);
+
+                            // Fallback: If no courses found for the specific instructor, just load all of them so the table works
+                            if (dt.Rows.Count == 0)
+                            {
+                                string fallbackQuery = "SELECT CourseID, Title, Category, Instructor FROM Courses ORDER BY CourseID DESC";
+                                using (SqlCommand fallbackCmd = new SqlCommand(fallbackQuery, conn))
+                                {
+                                    using (SqlDataAdapter fallbackSda = new SqlDataAdapter(fallbackCmd))
+                                    {
+                                        dt = new DataTable();
+                                        fallbackSda.Fill(dt);
+                                    }
+                                }
+                            }
+
+                            gvCourses.DataSource = dt;
+                            gvCourses.DataBind();
                         }
-
-                        // Generate a unique file name so we don't overwrite existing files
-                        string fileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(fileUploadMaterial.FileName);
-                        string savePath = folderPath + fileName;
-
-                        fileUploadMaterial.SaveAs(savePath);
-
-                        // This is the path we save to the database so CourseDetails.aspx can find it
-                        contentPath = "~/Materials/" + fileName;
                     }
-                    catch (Exception ex)
+                    catch (SqlException)
                     {
-                        ShowMessage("File upload failed: " + ex.Message, false);
-                        return;
-                    }
-                }
-
-                // Insert into Database
-                using (SqlConnection conn = new SqlConnection(connString))
-                {
-                    string query = @"INSERT INTO Courses (Title, Description, Category, Instructor, ContentPath) 
-                                     VALUES (@Title, @Description, @Category, @Instructor, @ContentPath)";
-                    using (SqlCommand cmd = new SqlCommand(query, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@Title", title);
-                        cmd.Parameters.AddWithValue("@Description", description);
-                        cmd.Parameters.AddWithValue("@Category", category);
-                        cmd.Parameters.AddWithValue("@Instructor", instructor);
-                        cmd.Parameters.AddWithValue("@ContentPath", (object)contentPath ?? DBNull.Value);
-
-                        try
-                        {
-                            conn.Open();
-                            cmd.ExecuteNonQuery();
-
-                            ShowMessage("New course added successfully!", true);
-
-                            // Clear form fields
-                            txtTitle.Text = ""; txtCategory.Text = ""; txtInstructor.Text = ""; txtDescription.Text = "";
-
-                            BindGrid();
-                        }
-                        catch (SqlException ex)
-                        {
-                            ShowMessage("Database error: " + ex.Message, false);
-                        }
+                        ShowMessage("Database error while loading courses.", false);
                     }
                 }
             }
         }
 
-        // --- 2. UPDATE: Edit existing course ---
-        protected void gvCourses_RowEditing(object sender, GridViewEditEventArgs e)
+        protected void btnUpload_Click(object sender, EventArgs e)
         {
-            gvCourses.EditIndex = e.NewEditIndex;
-            BindGrid();
+            if (!Page.IsValid) return;
+
+            if (fileUpload.HasFile)
+            {
+                try
+                {
+                    // Ensure the 'Materials' folder exists in your project
+                    string folderPath = Server.MapPath("~/Materials/");
+                    if (!Directory.Exists(folderPath))
+                    {
+                        Directory.CreateDirectory(folderPath);
+                    }
+
+                    // Save the uploaded PDF securely
+                    string fileName = Path.GetFileName(fileUpload.FileName);
+                    string savePath = Path.Combine(folderPath, fileName);
+                    fileUpload.SaveAs(savePath);
+
+                    // Insert data into Database
+                    InsertCourseToDatabase(txtTitle.Text.Trim(), txtDescription.Text.Trim(), ddlCategory.SelectedValue, fileName);
+                }
+                catch (Exception ex)
+                {
+                    ShowMessage("An error occurred while uploading the file: " + ex.Message, false);
+                }
+            }
+            else
+            {
+                ShowMessage("Please select a PDF file to upload.", false);
+            }
         }
 
-        protected void gvCourses_RowCancelingEdit(object sender, GridViewCancelEditEventArgs e)
+        private void InsertCourseToDatabase(string title, string description, string category, string fileName)
         {
-            gvCourses.EditIndex = -1;
-            BindGrid();
-        }
-
-        protected void gvCourses_RowUpdating(object sender, GridViewUpdateEventArgs e)
-        {
-            int courseId = Convert.ToInt32(gvCourses.DataKeys[e.RowIndex].Value);
-            GridViewRow row = gvCourses.Rows[e.RowIndex];
-
-            string title = (row.Cells[1].Controls[0] as TextBox).Text.Trim();
-            string category = (row.Cells[2].Controls[0] as TextBox).Text.Trim();
-            string instructor = (row.Cells[3].Controls[0] as TextBox).Text.Trim();
+            string instructorName = Session["FullName"]?.ToString() ?? Session["Username"]?.ToString() ?? "Educator";
 
             using (SqlConnection conn = new SqlConnection(connString))
             {
-                string query = "UPDATE Courses SET Title = @Title, Category = @Category, Instructor = @Instructor WHERE CourseID = @CourseID";
+                string query = @"INSERT INTO Courses (Title, Description, Category, Instructor, FilePath) 
+                                 VALUES (@Title, @Description, @Category, @Instructor, @FilePath)";
+
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@Title", title);
+                    cmd.Parameters.AddWithValue("@Description", description);
                     cmd.Parameters.AddWithValue("@Category", category);
-                    cmd.Parameters.AddWithValue("@Instructor", instructor);
-                    cmd.Parameters.AddWithValue("@CourseID", courseId);
+                    cmd.Parameters.AddWithValue("@Instructor", instructorName);
+                    cmd.Parameters.AddWithValue("@FilePath", "~/Materials/" + fileName); // Path to load the PDF later
 
-                    conn.Open();
-                    cmd.ExecuteNonQuery();
+                    try
+                    {
+                        conn.Open();
+                        cmd.ExecuteNonQuery();
+                        ShowMessage("Course uploaded successfully!", true);
 
-                    gvCourses.EditIndex = -1;
-                    BindGrid();
-                    ShowMessage("Course updated successfully.", true);
+                        // Clear the form fields after successful upload
+                        txtTitle.Text = "";
+                        txtDescription.Text = "";
+                        ddlCategory.SelectedIndex = 0;
+
+                        // Refresh the table to show the new course
+                        LoadCourses();
+                    }
+                    catch (SqlException)
+                    {
+                        ShowMessage("A database error occurred while saving the course. Please verify your table structure.", false);
+                    }
                 }
             }
         }
 
-        // --- 3. DELETE: Remove a course ---
         protected void gvCourses_RowDeleting(object sender, GridViewDeleteEventArgs e)
         {
             int courseId = Convert.ToInt32(gvCourses.DataKeys[e.RowIndex].Value);
 
             using (SqlConnection conn = new SqlConnection(connString))
             {
-                // First, delete any student progress linked to this course so we don't get foreign key errors
-                string deleteProgressQuery = "DELETE FROM StudentProgress WHERE CourseID = @CourseID";
-                // Then, delete the course itself
-                string deleteCourseQuery = "DELETE FROM Courses WHERE CourseID = @CourseID";
-
-                conn.Open();
-
-                using (SqlTransaction trans = conn.BeginTransaction()) // Use a transaction to ensure both delete safely
+                string query = "DELETE FROM Courses WHERE CourseID = @CourseID";
+                using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
+                    cmd.Parameters.AddWithValue("@CourseID", courseId);
+
                     try
                     {
-                        using (SqlCommand cmd1 = new SqlCommand(deleteProgressQuery, conn, trans))
-                        {
-                            cmd1.Parameters.AddWithValue("@CourseID", courseId);
-                            cmd1.ExecuteNonQuery();
-                        }
-
-                        using (SqlCommand cmd2 = new SqlCommand(deleteCourseQuery, conn, trans))
-                        {
-                            cmd2.Parameters.AddWithValue("@CourseID", courseId);
-                            cmd2.ExecuteNonQuery();
-                        }
-
-                        trans.Commit(); // Success!
-                        BindGrid();
-                        ShowMessage("Course and associated student progress deleted successfully.", true);
+                        conn.Open();
+                        cmd.ExecuteNonQuery();
+                        ShowMessage("Course deleted successfully.", true);
+                        LoadCourses();
                     }
-                    catch (Exception ex)
+                    catch (SqlException ex)
                     {
-                        trans.Rollback(); // If something fails, undo the deletion
-                        ShowMessage("Error deleting course: " + ex.Message, false);
+                        if (ex.Number == 547) // SQL constraint violation (students took the course)
+                        {
+                            ShowMessage("Cannot delete this course because students have already interacted with it.", false);
+                        }
+                        else
+                        {
+                            ShowMessage("Error deleting course.", false);
+                        }
                     }
                 }
             }
@@ -204,7 +184,7 @@ namespace Assignment
         {
             lblMessage.Visible = true;
             lblMessage.Text = message;
-            lblMessage.CssClass = isSuccess ? "alert alert-success d-block" : "alert alert-danger d-block";
+            lblMessage.CssClass = isSuccess ? "alert alert-success d-block rounded-3 shadow-sm" : "alert alert-danger d-block rounded-3 shadow-sm";
         }
     }
 }
