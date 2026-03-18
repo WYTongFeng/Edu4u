@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Data.SqlClient;
 using System.Security.Cryptography;
-using System.Text;
 using System.Configuration;
 
 namespace Assignment
 {
     public partial class Register : System.Web.UI.Page
     {
-        // Safely retrieve the connection string. It's better practice to let the app throw an error 
-        // if the string is missing rather than falling back to a hardcoded LocalDB path.
         private readonly string connString = ConfigurationManager.ConnectionStrings["Edu2UDB"]?.ConnectionString;
+
+        // The secret code required to create an educator account
+        private readonly string SECRET_EDUCATOR_CODE = "EDU-2026-APU";
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -18,7 +18,6 @@ namespace Assignment
 
         protected void btnRegister_Click(object sender, EventArgs e)
         {
-            // Ensure ASPX validators have passed
             if (Page.IsValid)
             {
                 string fullName = txtFullName.Text.Trim();
@@ -26,12 +25,22 @@ namespace Assignment
                 string username = txtUsername.Text.Trim();
                 string password = txtPassword.Text;
                 string role = ddlRole.SelectedValue;
+                string accessCode = txtAccessCode.Text.Trim();
 
-                // Basic server-side validation fallback
                 if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password) || string.IsNullOrEmpty(email))
                 {
                     ShowMessage("Please fill in all required fields.", false);
                     return;
+                }
+
+                // 🚨 SECURITY CHECK: Verify Educator Access Code
+                if (role == "Educator")
+                {
+                    if (accessCode != SECRET_EDUCATOR_CODE)
+                    {
+                        ShowMessage("Invalid Educator Access Code. Please contact IT if you are a legitimate staff member.", false);
+                        return;
+                    }
                 }
 
                 // Hash the password securely with a Salt
@@ -40,11 +49,10 @@ namespace Assignment
                 using (SqlConnection conn = new SqlConnection(connString))
                 {
                     string query = @"INSERT INTO Users (Username, PasswordHash, FullName, Email, Role, IsActive) 
-                                    VALUES (@Username, @PasswordHash, @FullName, @Email, @Role, 1)";
+                                     VALUES (@Username, @PasswordHash, @FullName, @Email, @Role, 1)";
 
                     using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
-                        // Using AddWithValue is okay for simple strings, but specifying SqlDbType is safer for production
                         cmd.Parameters.AddWithValue("@Username", username);
                         cmd.Parameters.AddWithValue("@PasswordHash", hashedPassword);
                         cmd.Parameters.AddWithValue("@FullName", fullName);
@@ -69,7 +77,6 @@ namespace Assignment
                             }
                             else
                             {
-                                // SECURITY FIX: Never expose raw database errors (ex.Message) to the end user.
                                 ShowMessage("An unexpected database error occurred. Please try again later.", false);
                             }
                         }
@@ -82,23 +89,20 @@ namespace Assignment
             }
         }
 
-        // SECURITY UPGRADE: PBKDF2 Password Hashing with a Salt
+        // PBKDF2 Password Hashing with a Salt
         private string HashPasswordSecurely(string password)
         {
-            // 1. Generate a random salt
             byte[] salt = new byte[16];
             using (var rng = RandomNumberGenerator.Create())
             {
                 rng.GetBytes(salt);
             }
 
-            // 2. Hash the password using PBKDF2
             using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, 100000, HashAlgorithmName.SHA256))
             {
-                byte[] hash = pbkdf2.GetBytes(32); // 256-bit hash
+                byte[] hash = pbkdf2.GetBytes(32);
 
-                // 3. Combine salt and hash into a single string for storage
-                byte[] hashBytes = new byte[48]; // 16 bytes salt + 32 bytes hash
+                byte[] hashBytes = new byte[48];
                 Array.Copy(salt, 0, hashBytes, 0, 16);
                 Array.Copy(hash, 0, hashBytes, 16, 32);
 
@@ -110,7 +114,11 @@ namespace Assignment
         {
             lblMessage.Visible = true;
             lblMessage.Text = message;
-            lblMessage.CssClass = isSuccess ? "alert alert-success d-block" : "alert alert-danger d-block";
+
+            // Professional alert styles
+            lblMessage.CssClass = isSuccess
+                ? "alert alert-success border-0 bg-success bg-opacity-10 text-success d-block p-3"
+                : "alert alert-danger border-0 bg-danger bg-opacity-10 text-danger d-block p-3";
         }
     }
 }

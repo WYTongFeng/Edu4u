@@ -1,79 +1,118 @@
-﻿<%@ Page Title="Upload Content" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="UploadContent.aspx.cs" Inherits="Assignment.UploadContent" %>
+﻿<%@ Page Title="Add Quiz Question" Language="C#" MasterPageFile="~/Site.Master" AutoEventWireup="true" CodeBehind="UploadContent.aspx.cs" Inherits="Assignment.UploadContent" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
-    <div class="container mt-4 mb-5">
+    <div class="container py-4">
         
-        <div class="row mb-4 align-items-center">
-            <div class="col-md-8">
+        <div class="row mb-4">
+            <div class="col-md-12">
                 <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb mb-1">
-                        <li class="breadcrumb-item"><a href="Dashboard.aspx" class="text-decoration-none">Dashboard</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Upload Material</li>
+                    <ol class="breadcrumb mb-2">
+                        <li class="breadcrumb-item">
+                            <a href='<%= (Session["Role"] != null && Session["Role"].ToString() == "Administrator") ? "AdminDashboard.aspx" : "Dashboard.aspx" %>' class="text-decoration-none">Dashboard</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">Quiz Management</li>
                     </ol>
                 </nav>
-                <h2 class="text-info fw-bold mb-0">📤 Upload Learning Material</h2>
-                <p class="text-muted mt-1">Create a new course and upload your PDF resources for students.</p>
+                <h3 class="fw-semibold text-dark mb-1">Add Quiz Question</h3>
+                <p class="text-secondary mb-0">Create multiple-choice questions for your courses.</p>
             </div>
         </div>
 
-        <asp:Label ID="lblMessage" runat="server" CssClass="alert d-block" Visible="false"></asp:Label>
+        <asp:Label ID="lblMessage" runat="server" CssClass="alert d-block rounded-3 mb-4" Visible="false"></asp:Label>
 
-        <div class="row justify-content-center">
+        <div class="row">
             <div class="col-lg-8">
-                <div class="card shadow-sm border-0 border-top border-info border-4">
-                    <div class="card-body p-4 p-md-5">
+                <div class="card border-0 shadow-sm rounded-3">
+                    <div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4">
+                        <h5 class="fw-semibold text-dark mb-0">Question Details</h5>
+                    </div>
+                    <div class="card-body p-4">
                         
-                        <div class="mb-4 text-center">
-                            <div class="display-1 text-info mb-3">📄</div>
-                            <h4>Course Details</h4>
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <label class="form-label fw-medium text-dark small">Select Course <span class="text-danger">*</span></label>
+                                <asp:DropDownList ID="ddlCourse" runat="server" CssClass="form-select">
+                                    <asp:ListItem Value="">-- Select a Course --</asp:ListItem>
+                                </asp:DropDownList>
+                                <asp:RequiredFieldValidator ID="rfvCourse" runat="server" ControlToValidate="ddlCourse" ErrorMessage="Please select a course." CssClass="text-danger small mt-1 d-block" Display="Dynamic"></asp:RequiredFieldValidator>
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Course Title</label>
-                            <asp:TextBox ID="txtTitle" runat="server" CssClass="form-control form-control-lg" placeholder="e.g. Introduction to Programming"></asp:TextBox>
-                            <asp:RequiredFieldValidator ID="rfvTitle" runat="server" ControlToValidate="txtTitle" ErrorMessage="A course title is required" CssClass="text-danger small" Display="Dynamic"></asp:RequiredFieldValidator>
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <label class="form-label fw-medium text-dark small">Question Text <span class="text-danger">*</span></label>
+                                <asp:TextBox ID="txtQuestion" runat="server" CssClass="form-control" TextMode="MultiLine" Rows="3" placeholder="Enter the question here..."></asp:TextBox>
+                                <asp:RequiredFieldValidator ID="rfvQuestion" runat="server" ControlToValidate="txtQuestion" ErrorMessage="Question text is required." CssClass="text-danger small mt-1 d-block" Display="Dynamic"></asp:RequiredFieldValidator>
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Category</label>
-                            <asp:DropDownList ID="ddlCategory" runat="server" CssClass="form-select form-select-lg">
-                                <asp:ListItem Value="">-- Select a Category --</asp:ListItem>
-                                <asp:ListItem Value="Programming">Programming</asp:ListItem>
-                                <asp:ListItem Value="Security">Cyber Security</asp:ListItem>
-                                <asp:ListItem Value="Data Science">Data Science</asp:ListItem>
-                                <asp:ListItem Value="Networking">Networking</asp:ListItem>
-                                <asp:ListItem Value="General Computing">General Computing</asp:ListItem>
-                            </asp:DropDownList>
-                            <asp:RequiredFieldValidator ID="rfvCategory" runat="server" ControlToValidate="ddlCategory" ErrorMessage="Please select a category" CssClass="text-danger small" Display="Dynamic"></asp:RequiredFieldValidator>
+                        <div class="bg-light p-4 rounded-3 border mb-4">
+                            <h6 class="fw-semibold text-dark mb-3">Answers</h6>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-medium text-dark small">Option A <span class="text-danger">*</span></label>
+                                    <asp:TextBox ID="txtOptionA" runat="server" CssClass="form-control" placeholder="Option A"></asp:TextBox>
+                                    <asp:RequiredFieldValidator ID="rfvOptA" runat="server" ControlToValidate="txtOptionA" ErrorMessage="Required" CssClass="text-danger small mt-1 d-block" Display="Dynamic"></asp:RequiredFieldValidator>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label class="form-label fw-medium text-dark small">Option B <span class="text-danger">*</span></label>
+                                    <asp:TextBox ID="txtOptionB" runat="server" CssClass="form-control" placeholder="Option B"></asp:TextBox>
+                                    <asp:RequiredFieldValidator ID="rfvOptB" runat="server" ControlToValidate="txtOptionB" ErrorMessage="Required" CssClass="text-danger small mt-1 d-block" Display="Dynamic"></asp:RequiredFieldValidator>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-medium text-dark small">Option C <span class="text-danger">*</span></label>
+                                    <asp:TextBox ID="txtOptionC" runat="server" CssClass="form-control" placeholder="Option C"></asp:TextBox>
+                                    <asp:RequiredFieldValidator ID="rfvOptC" runat="server" ControlToValidate="txtOptionC" ErrorMessage="Required" CssClass="text-danger small mt-1 d-block" Display="Dynamic"></asp:RequiredFieldValidator>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-medium text-dark small">Option D <span class="text-danger">*</span></label>
+                                    <asp:TextBox ID="txtOptionD" runat="server" CssClass="form-control" placeholder="Option D"></asp:TextBox>
+                                    <asp:RequiredFieldValidator ID="rfvOptD" runat="server" ControlToValidate="txtOptionD" ErrorMessage="Required" CssClass="text-danger small mt-1 d-block" Display="Dynamic"></asp:RequiredFieldValidator>
+                                </div>
+                            </div>
+
+                            <hr class="my-3" />
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-medium text-dark small">Correct Option <span class="text-danger">*</span></label>
+                                    <asp:DropDownList ID="ddlCorrectOption" runat="server" CssClass="form-select border-primary">
+                                        <asp:ListItem Value="">-- Select Correct Answer --</asp:ListItem>
+                                        <asp:ListItem Value="A">Option A</asp:ListItem>
+                                        <asp:ListItem Value="B">Option B</asp:ListItem>
+                                        <asp:ListItem Value="C">Option C</asp:ListItem>
+                                        <asp:ListItem Value="D">Option D</asp:ListItem>
+                                    </asp:DropDownList>
+                                    <asp:RequiredFieldValidator ID="rfvCorrect" runat="server" ControlToValidate="ddlCorrectOption" ErrorMessage="Select the correct option." CssClass="text-danger small mt-1 d-block" Display="Dynamic"></asp:RequiredFieldValidator>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">Course Description</label>
-                            <asp:TextBox ID="txtDescription" runat="server" CssClass="form-control" TextMode="MultiLine" Rows="4" placeholder="Briefly describe what students will learn..."></asp:TextBox>
-                            <asp:RequiredFieldValidator ID="rfvDesc" runat="server" ControlToValidate="txtDescription" ErrorMessage="A description is required" CssClass="text-danger small" Display="Dynamic"></asp:RequiredFieldValidator>
-                        </div>
-
-                        <hr class="my-4" />
-
-                        <div class="mb-4 bg-light p-4 rounded text-center border border-dashed">
-                            <label class="form-label fw-bold d-block mb-3">Upload PDF Material</label>
-                            <asp:FileUpload ID="fileUploadMaterial" runat="server" CssClass="form-control mb-2" accept=".pdf" />
-                            <small class="text-muted d-block mt-2">Only .PDF files are supported. Ensure your file is not password protected.</small>
-                            <asp:RequiredFieldValidator ID="rfvFile" runat="server" ControlToValidate="fileUploadMaterial" ErrorMessage="You must upload a learning material" CssClass="text-danger small" Display="Dynamic"></asp:RequiredFieldValidator>
-                        </div>
-
-                        <div class="d-grid mt-5">
-                            <asp:Button ID="btnUpload" runat="server" Text="Publish Course" CssClass="btn btn-info btn-lg text-white fw-bold" OnClick="btnUpload_Click" />
+                        <div class="d-flex justify-content-end">
+                            <asp:Button ID="btnSaveQuestion" runat="server" Text="Save Question" CssClass="btn btn-primary px-4 py-2 fw-medium" OnClick="btnSaveQuestion_Click" />
                         </div>
 
                     </div>
                 </div>
             </div>
+            
+            <div class="col-lg-4 d-none d-lg-block">
+                <div class="card border-0 shadow-sm rounded-3 bg-light">
+                    <div class="card-body p-4">
+                        <h6 class="fw-semibold text-dark border-bottom pb-2 mb-3">Quiz Tips</h6>
+                        <ul class="text-secondary small ps-3 mb-0" style="line-height: 1.8;">
+                            <li>Ensure that questions are clear and unambiguous.</li>
+                            <li>Make sure only one option is completely correct.</li>
+                            <li>Questions will be immediately available to students taking the assigned course.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
-
     </div>
-
-    <style>
-        .border-dashed { border-style: dashed !important; border-width: 2px !important; border-color: #ccc !important; }
-    </style>
 </asp:Content>

@@ -5,7 +5,9 @@
         
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb bg-transparent p-0 mb-4">
-                <li class="breadcrumb-item"><a href="Dashboard.aspx" class="text-decoration-none">Dashboard</a></li>
+                <li class="breadcrumb-item">
+                    <a href='<%= (Session["Role"] != null && Session["Role"].ToString() == "Administrator") ? "AdminDashboard.aspx" : "Dashboard.aspx" %>' class="text-decoration-none">Dashboard</a>
+                </li>
                 <li class="breadcrumb-item active fw-semibold" aria-current="page">Course Management</li>
             </ol>
         </nav>
@@ -37,19 +39,22 @@
                         </div>
                         
                         <div class="mb-3">
+                            <label class="form-label fw-semibold text-muted small">Instructor Name <span class="text-danger">*</span></label>
+                            <asp:TextBox ID="txtInstructor" runat="server" CssClass="form-control bg-light border-0" placeholder="e.g. Dr. Lai Ngan Kuen"></asp:TextBox>
+                            <asp:RequiredFieldValidator ID="rfvInstructor" runat="server" ControlToValidate="txtInstructor" ErrorMessage="Instructor name is required." CssClass="text-danger small mt-1 d-block" Display="Dynamic" ValidationGroup="UploadGroup"></asp:RequiredFieldValidator>
+                        </div>
+
+                        <div class="mb-3">
                             <label class="form-label fw-semibold text-muted small">Category <span class="text-danger">*</span></label>
                             <asp:DropDownList ID="ddlCategory" runat="server" CssClass="form-select bg-light border-0">
                                 <asp:ListItem Text="-- Select Category --" Value="" />
-        
                                 <asp:ListItem Text="Computer Science" Value="Computer Science" />
                                 <asp:ListItem Text="Cybersecurity" Value="Cybersecurity" />
                                 <asp:ListItem Text="Software Engineering" Value="Software Engineering" />
-        
                                 <asp:ListItem Text="Networking & Security" Value="Networking & Security" />
                                 <asp:ListItem Text="UI/UX Design" Value="UI/UX Design" />
                                 <asp:ListItem Text="Data Structures & Algorithms" Value="Data Structures & Algorithms" />
-        
-                                </asp:DropDownList>
+                            </asp:DropDownList>
                             <asp:RequiredFieldValidator ID="rfvCategory" runat="server" ControlToValidate="ddlCategory" InitialValue="" ErrorMessage="Please select a category." CssClass="text-danger small mt-1 d-block" Display="Dynamic" ValidationGroup="UploadGroup"></asp:RequiredFieldValidator>
                         </div>
 

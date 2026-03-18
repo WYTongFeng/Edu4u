@@ -1,100 +1,108 @@
 ﻿using System;
+using System.Data;
 using System.Data.SqlClient;
-using System.IO;
 using System.Configuration;
 
 namespace Assignment
 {
     public partial class UploadContent : System.Web.UI.Page
     {
-        string connString = ConfigurationManager.ConnectionStrings["Edu2UDB"]?.ConnectionString
-            ?? @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=|DataDirectory|\Edu2U.mdf;Integrated Security=True";
+        private readonly string connString = ConfigurationManager.ConnectionStrings["Edu2UDB"]?.ConnectionString;
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            // Security Check: Only Educators allowed!
-            if (Session["UserID"] == null || Session["Role"]?.ToString() != "Educator")
+            // SECURITY FIX: Allow BOTH Educators and Administrators.
+            string role = Session["Role"] != null ? Session["Role"].ToString() : "";
+
+            if (Session["UserID"] == null || (role != "Educator" && role != "Administrator"))
             {
-                Response.Redirect("LoginPage.aspx");
+                Response.Redirect("LoginPage.aspx", false);
+                Context.ApplicationInstance.CompleteRequest();
                 return;
+            }
+
+            if (!IsPostBack)
+            {
+                LoadCourses();
             }
         }
 
-        protected void btnUpload_Click(object sender, EventArgs e)
+        private void LoadCourses()
         {
-            if (Page.IsValid)
+            using (SqlConnection conn = new SqlConnection(connString))
             {
-                // Grab the instructor's name directly from the session (secure, they can't spoof it)
-                string instructorName = Session["FullName"].ToString();
+                string query = "SELECT CourseID, Title FROM Courses ORDER BY CourseID DESC";
 
-                string title = txtTitle.Text.Trim();
-                string category = ddlCategory.SelectedValue;
-                string description = txtDescription.Text.Trim();
-                string contentPath = null;
-
-                // 1. Handle the physical file upload
-                if (fileUploadMaterial.HasFile)
+                using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
-                    // Basic validation to ensure it's actually a PDF
-                    string fileExtension = Path.GetExtension(fileUploadMaterial.FileName).ToLower();
-                    if (fileExtension != ".pdf")
+                    // FIX: Removed the unnecessary @Instructor parameter that was causing confusion
+                    try
                     {
-                        ShowMessage("Error: Please upload a valid PDF file.", false);
-                        return;
+                        conn.Open();
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            ddlCourse.DataSource = reader;
+                            ddlCourse.DataTextField = "Title";
+                            ddlCourse.DataValueField = "CourseID";
+                            ddlCourse.DataBind();
+                        }
+
+                        ddlCourse.Items.Insert(0, new System.Web.UI.WebControls.ListItem("-- Select a Course --", ""));
                     }
+                    catch (SqlException ex)
+                    {
+                        ShowMessage("Failed to load courses. Please try again. Error: " + ex.Message, false);
+                    }
+                }
+            }
+        }
+
+        protected void btnSaveQuestion_Click(object sender, EventArgs e)
+        {
+            if (!Page.IsValid) return;
+
+            int courseId = int.Parse(ddlCourse.SelectedValue);
+            string questionText = txtQuestion.Text.Trim();
+            string optionA = txtOptionA.Text.Trim();
+            string optionB = txtOptionB.Text.Trim();
+            string optionC = txtOptionC.Text.Trim();
+            string optionD = txtOptionD.Text.Trim();
+            string correctOption = ddlCorrectOption.SelectedValue;
+
+            using (SqlConnection conn = new SqlConnection(connString))
+            {
+                string query = @"INSERT INTO QuizQuestions 
+                                 (CourseID, QuestionText, OptionA, OptionB, OptionC, OptionD, CorrectOption) 
+                                 VALUES 
+                                 (@CourseID, @QuestionText, @OptionA, @OptionB, @OptionC, @OptionD, @CorrectOption)";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@CourseID", courseId);
+                    cmd.Parameters.AddWithValue("@QuestionText", questionText);
+                    cmd.Parameters.AddWithValue("@OptionA", optionA);
+                    cmd.Parameters.AddWithValue("@OptionB", optionB);
+                    cmd.Parameters.AddWithValue("@OptionC", optionC);
+                    cmd.Parameters.AddWithValue("@OptionD", optionD);
+                    cmd.Parameters.AddWithValue("@CorrectOption", correctOption);
 
                     try
                     {
-                        string folderPath = Server.MapPath("~/Materials/");
-                        if (!Directory.Exists(folderPath))
-                        {
-                            Directory.CreateDirectory(folderPath);
-                        }
+                        conn.Open();
+                        cmd.ExecuteNonQuery();
 
-                        // Generate a unique identifier to prevent overwriting files with the same name
-                        string fileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(fileUploadMaterial.FileName);
-                        string savePath = folderPath + fileName;
+                        ShowMessage("Question added successfully!", true);
 
-                        fileUploadMaterial.SaveAs(savePath);
-                        contentPath = "~/Materials/" + fileName;
+                        txtQuestion.Text = "";
+                        txtOptionA.Text = "";
+                        txtOptionB.Text = "";
+                        txtOptionC.Text = "";
+                        txtOptionD.Text = "";
+                        ddlCorrectOption.SelectedIndex = 0;
                     }
-                    catch (Exception ex)
+                    catch (SqlException ex)
                     {
-                        ShowMessage("File upload failed: " + ex.Message, false);
-                        return;
-                    }
-                }
-
-                // 2. Save the course to the database
-                using (SqlConnection conn = new SqlConnection(connString))
-                {
-                    string query = @"INSERT INTO Courses (Title, Description, Category, Instructor, ContentPath) 
-                                     VALUES (@Title, @Description, @Category, @Instructor, @ContentPath)";
-
-                    using (SqlCommand cmd = new SqlCommand(query, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@Title", title);
-                        cmd.Parameters.AddWithValue("@Description", description);
-                        cmd.Parameters.AddWithValue("@Category", category);
-                        cmd.Parameters.AddWithValue("@Instructor", instructorName);
-                        cmd.Parameters.AddWithValue("@ContentPath", contentPath);
-
-                        try
-                        {
-                            conn.Open();
-                            cmd.ExecuteNonQuery();
-
-                            ShowMessage("Success! Your course and material have been published.", true);
-
-                            // Reset the form so they can upload another if they want
-                            txtTitle.Text = "";
-                            ddlCategory.SelectedIndex = 0;
-                            txtDescription.Text = "";
-                        }
-                        catch (SqlException ex)
-                        {
-                            ShowMessage("Database error: " + ex.Message, false);
-                        }
+                        ShowMessage("Database error: " + ex.Message, false);
                     }
                 }
             }
@@ -104,12 +112,14 @@ namespace Assignment
         {
             lblMessage.Visible = true;
             lblMessage.Text = message;
-            lblMessage.CssClass = isSuccess ? "alert alert-success d-block" : "alert alert-danger d-block";
 
-            // If success, scroll the user to the top to see the message
+            lblMessage.CssClass = isSuccess
+                ? "alert alert-success border-0 bg-success bg-opacity-10 text-success d-block p-3"
+                : "alert alert-danger border-0 bg-danger bg-opacity-10 text-danger d-block p-3";
+
             if (isSuccess)
             {
-                Page.ClientScript.RegisterStartupScript(this.GetType(), "Scroll", "window.scrollTo(0, 0);", true);
+                Page.ClientScript.RegisterStartupScript(this.GetType(), "Scroll", "window.scrollTo({top: 0, behavior: 'smooth'});", true);
             }
         }
     }

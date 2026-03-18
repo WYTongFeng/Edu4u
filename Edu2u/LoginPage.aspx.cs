@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Data.SqlClient;
 using System.Security.Cryptography;
-using System.Text;
 using System.Configuration;
 
 namespace Assignment
 {
     public partial class LoginPage : System.Web.UI.Page
     {
-        string connString = ConfigurationManager.ConnectionStrings["Edu2UDB"]?.ConnectionString
-            ?? @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=|DataDirectory|\Edu2U.mdf;Integrated Security=True";
+        private readonly string connString = ConfigurationManager.ConnectionStrings["Edu2UDB"]?.ConnectionString;
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -33,8 +31,8 @@ namespace Assignment
                 using (SqlConnection conn = new SqlConnection(connString))
                 {
                     string query = @"SELECT UserID, Role, IsActive, FullName, PasswordHash 
-                             FROM Users 
-                             WHERE Username = @Username";
+                                     FROM Users 
+                                     WHERE Username = @Username";
 
                     using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
@@ -48,15 +46,11 @@ namespace Assignment
                                 if (reader.Read())
                                 {
                                     // 1. Check if the Account is Active
-                                    bool isActive = false;
-                                    if (reader["IsActive"] != DBNull.Value)
-                                    {
-                                        isActive = Convert.ToBoolean(reader["IsActive"]);
-                                    }
+                                    bool isActive = reader["IsActive"] != DBNull.Value && Convert.ToBoolean(reader["IsActive"]);
 
                                     if (!isActive)
                                     {
-                                        ShowMessage("DEBUG ERROR: Your account is in the database, but IsActive is False or NULL.", false);
+                                        ShowMessage("Your account has been deactivated. Please contact an administrator.", false);
                                         return;
                                     }
 
@@ -68,7 +62,7 @@ namespace Assignment
 
                                         if (hashBytes.Length != 48)
                                         {
-                                            ShowMessage($"DEBUG ERROR: Hash length is {hashBytes.Length}. The database might have cut off the end of your password!", false);
+                                            ShowMessage("Invalid username or password.", false);
                                             return;
                                         }
 
@@ -106,42 +100,27 @@ namespace Assignment
                                             }
                                             else
                                             {
-                                                ShowMessage("DEBUG ERROR: The passwords do not match.", false);
+                                                ShowMessage("Invalid username or password.", false);
                                             }
                                         }
                                     }
                                     catch (FormatException)
                                     {
-                                        ShowMessage("DEBUG ERROR: The Password in the database is not in valid Base64 format.", false);
+                                        ShowMessage("Invalid username or password.", false);
                                     }
                                 }
                                 else
                                 {
-                                    ShowMessage("DEBUG ERROR: Username not found in the database.", false);
+                                    ShowMessage("Invalid username or password.", false);
                                 }
                             }
                         }
-                        catch (SqlException ex)
+                        catch (SqlException)
                         {
-                            ShowMessage("DEBUG ERROR: " + ex.Message, false);
+                            ShowMessage("An unexpected database error occurred. Please try again later.", false);
                         }
                     }
                 }
-            }
-        }
-
-        // SHA256 Password Hashing Helper (Must match the one in Register.aspx.cs)
-        private string HashPassword(string password)
-        {
-            using (SHA256 sha256 = SHA256.Create())
-            {
-                byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-                StringBuilder builder = new StringBuilder();
-                for (int i = 0; i < bytes.Length; i++)
-                {
-                    builder.Append(bytes[i].ToString("x2"));
-                }
-                return builder.ToString();
             }
         }
 
@@ -149,7 +128,11 @@ namespace Assignment
         {
             lblMessage.Visible = true;
             lblMessage.Text = message;
-            lblMessage.CssClass = isSuccess ? "alert alert-success d-block" : "alert alert-danger d-block";
+
+            // Professional alert styles
+            lblMessage.CssClass = isSuccess
+                ? "alert alert-success border-0 bg-success bg-opacity-10 text-success d-block p-3"
+                : "alert alert-danger border-0 bg-danger bg-opacity-10 text-danger d-block p-3";
         }
     }
 }

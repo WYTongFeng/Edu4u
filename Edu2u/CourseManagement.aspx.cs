@@ -13,9 +13,10 @@ namespace Assignment
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            // THIS FIXES THE LOGIN BUG: 
-            // Only check if the Session has a UserID. We removed the strict, buggy Role check.
-            if (Session["UserID"] == null)
+            // SECURITY FIX: Allow BOTH Educators and Administrators, block Students and Guests.
+            string role = Session["Role"] != null ? Session["Role"].ToString() : "";
+
+            if (Session["UserID"] == null || (role != "Educator" && role != "Administrator"))
             {
                 Response.Redirect("LoginPage.aspx", false);
                 Context.ApplicationInstance.CompleteRequest();
@@ -30,45 +31,28 @@ namespace Assignment
 
         private void LoadCourses()
         {
-            string instructorName = Session["FullName"]?.ToString() ?? Session["Username"]?.ToString() ?? "Educator";
+            // We no longer need to check the role or the instructor's name here
+            // because Page_Load already ensures only Admins and Educators can access this page.
 
             using (SqlConnection conn = new SqlConnection(connString))
             {
-                // Attempt to load courses that belong to this educator specifically
-                string query = "SELECT CourseID, Title, Category, Instructor FROM Courses WHERE Instructor = @Instructor ORDER BY CourseID DESC";
+                // This query now fetches ALL courses for EVERYONE
+                string query = "SELECT CourseID, Title, Category, Instructor FROM Courses ORDER BY CourseID DESC";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
-                    cmd.Parameters.AddWithValue("@Instructor", instructorName);
-
                     try
                     {
-                        using (SqlDataAdapter sda = new SqlDataAdapter(cmd))
+                        conn.Open();
+                        using (SqlDataReader reader = cmd.ExecuteReader())
                         {
-                            DataTable dt = new DataTable();
-                            sda.Fill(dt);
-
-                            // Fallback: If no courses found for the specific instructor, just load all of them so the table works
-                            if (dt.Rows.Count == 0)
-                            {
-                                string fallbackQuery = "SELECT CourseID, Title, Category, Instructor FROM Courses ORDER BY CourseID DESC";
-                                using (SqlCommand fallbackCmd = new SqlCommand(fallbackQuery, conn))
-                                {
-                                    using (SqlDataAdapter fallbackSda = new SqlDataAdapter(fallbackCmd))
-                                    {
-                                        dt = new DataTable();
-                                        fallbackSda.Fill(dt);
-                                    }
-                                }
-                            }
-
-                            gvCourses.DataSource = dt;
+                            gvCourses.DataSource = reader;
                             gvCourses.DataBind();
                         }
                     }
-                    catch (SqlException)
+                    catch (SqlException ex)
                     {
-                        ShowMessage("Database error while loading courses.", false);
+                        ShowMessage("Error loading courses: " + ex.Message, false);
                     }
                 }
             }
@@ -82,20 +66,17 @@ namespace Assignment
             {
                 try
                 {
-                    // Ensure the 'Materials' folder exists in your project
                     string folderPath = Server.MapPath("~/Materials/");
                     if (!Directory.Exists(folderPath))
                     {
                         Directory.CreateDirectory(folderPath);
                     }
 
-                    // Save the uploaded PDF securely
                     string fileName = Path.GetFileName(fileUpload.FileName);
                     string savePath = Path.Combine(folderPath, fileName);
                     fileUpload.SaveAs(savePath);
 
-                    // Insert data into Database
-                    InsertCourseToDatabase(txtTitle.Text.Trim(), txtDescription.Text.Trim(), ddlCategory.SelectedValue, fileName);
+                    InsertCourseToDatabase(txtTitle.Text.Trim(), txtDescription.Text.Trim(), ddlCategory.SelectedValue, fileName, txtInstructor.Text.Trim());
                 }
                 catch (Exception ex)
                 {
@@ -108,14 +89,12 @@ namespace Assignment
             }
         }
 
-        private void InsertCourseToDatabase(string title, string description, string category, string fileName)
+        private void InsertCourseToDatabase(string title, string description, string category, string fileName, string instructorName)
         {
-            string instructorName = Session["FullName"]?.ToString() ?? Session["Username"]?.ToString() ?? "Educator";
-
             using (SqlConnection conn = new SqlConnection(connString))
             {
-                string query = @"INSERT INTO Courses (Title, Description, Category, Instructor, FilePath) 
-                                 VALUES (@Title, @Description, @Category, @Instructor, @FilePath)";
+                string query = @"INSERT INTO Courses (Title, Description, Category, Instructor, ContentPath) 
+                                 VALUES (@Title, @Description, @Category, @Instructor, @ContentPath)";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
@@ -123,7 +102,7 @@ namespace Assignment
                     cmd.Parameters.AddWithValue("@Description", description);
                     cmd.Parameters.AddWithValue("@Category", category);
                     cmd.Parameters.AddWithValue("@Instructor", instructorName);
-                    cmd.Parameters.AddWithValue("@FilePath", "~/Materials/" + fileName); // Path to load the PDF later
+                    cmd.Parameters.AddWithValue("@ContentPath", "~/Materials/" + fileName);
 
                     try
                     {
@@ -131,17 +110,16 @@ namespace Assignment
                         cmd.ExecuteNonQuery();
                         ShowMessage("Course uploaded successfully!", true);
 
-                        // Clear the form fields after successful upload
                         txtTitle.Text = "";
+                        txtInstructor.Text = "";
                         txtDescription.Text = "";
                         ddlCategory.SelectedIndex = 0;
 
-                        // Refresh the table to show the new course
                         LoadCourses();
                     }
-                    catch (SqlException)
+                    catch (SqlException ex)
                     {
-                        ShowMessage("A database error occurred while saving the course. Please verify your table structure.", false);
+                        ShowMessage("A database error occurred: " + ex.Message, false);
                     }
                 }
             }
@@ -167,7 +145,7 @@ namespace Assignment
                     }
                     catch (SqlException ex)
                     {
-                        if (ex.Number == 547) // SQL constraint violation (students took the course)
+                        if (ex.Number == 547)
                         {
                             ShowMessage("Cannot delete this course because students have already interacted with it.", false);
                         }

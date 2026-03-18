@@ -3,82 +3,142 @@
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
     <div class="container mt-4 mb-5">
         
-        <div class="row mb-4 align-items-center">
-            <div class="col-md-8">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb mb-1">
-                        <li class="breadcrumb-item"><a href="AdminDashboard.aspx" class="text-decoration-none">Dashboard</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">System Reports</li>
-                    </ol>
-                </nav>
-                <h2 class="text-secondary fw-bold mb-0">📊 System Usage Reports</h2>
-                <p class="text-muted mt-1">Real-time statistics and analytics for the Edu2U platform.</p>
-            </div>
-            <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                <button type="button" class="btn btn-outline-secondary" onclick="window.print()">🖨️ Print Report</button>
-            </div>
-        </div>
+        <nav aria-label="breadcrumb" class="d-print-none">
+            <ol class="breadcrumb bg-transparent p-0 mb-4">
+                <li class="breadcrumb-item"><a href="AdminDashboard.aspx" class="text-decoration-none">Dashboard</a></li>
+                <li class="breadcrumb-item active fw-semibold" aria-current="page">System Reports</li>
+            </ol>
+        </nav>
 
-        <asp:Label ID="lblMessage" runat="server" CssClass="alert d-block" Visible="false"></asp:Label>
-
-        <div class="card shadow-sm border-0 mb-4 border-top-primary">
-            <div class="card-header bg-white fw-bold py-3">
-                🏆 Course Popularity & Completion Rates
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <asp:GridView ID="gvCourseReport" runat="server" CssClass="table table-hover table-striped mb-0 align-middle" 
-                        AutoGenerateColumns="False" GridLines="None">
-                        <HeaderStyle CssClass="table-light" />
-                        <Columns>
-                            <asp:BoundField DataField="Title" HeaderText="Course Title" ItemStyle-CssClass="fw-bold ps-4" HeaderStyle-CssClass="ps-4" />
-                            <asp:BoundField DataField="Category" HeaderText="Category" />
-                            <asp:BoundField DataField="Instructor" HeaderText="Instructor" />
-                            <asp:TemplateField HeaderText="Total Completions">
-                                <ItemTemplate>
-                                    <span class="badge bg-success fs-6"><%# Eval("TotalCompletions") %></span>
-                                </ItemTemplate>
-                            </asp:TemplateField>
-                        </Columns>
-                    </asp:GridView>
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div class="d-flex align-items-center">
+                <div class="icon-circle bg-warning bg-opacity-10 text-warning me-3 d-print-none" style="width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-chart-pie fs-3"></i>
+                </div>
+                <div>
+                    <h2 class="fw-bold mb-1">System Analytics</h2>
+                    <p class="text-muted mb-0 d-print-none">Generate and view reports on platform usage and user activity.</p>
                 </div>
             </div>
+            
+            <button type="button" class="btn btn-outline-secondary fw-bold px-4 py-2 rounded-pill shadow-sm d-print-none" onclick="window.print()">
+                <i class="fas fa-print me-2"></i> Print Report
+            </button>
         </div>
 
-        <div class="card shadow-sm border-0 border-top-info">
-            <div class="card-header bg-white fw-bold py-3">
-                🆕 Recent User Registrations (Top 10)
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <asp:GridView ID="gvRecentUsers" runat="server" CssClass="table table-hover mb-0 align-middle" 
-                        AutoGenerateColumns="False" GridLines="None">
-                        <HeaderStyle CssClass="table-light" />
-                        <Columns>
-                            <asp:BoundField DataField="Username" HeaderText="Username" ItemStyle-CssClass="fw-bold ps-4" HeaderStyle-CssClass="ps-4" />
-                            <asp:BoundField DataField="FullName" HeaderText="Full Name" />
-                            <asp:TemplateField HeaderText="Role">
-                                <ItemTemplate>
-                                    <span class="badge bg-secondary"><%# Eval("Role") %></span>
-                                </ItemTemplate>
-                            </asp:TemplateField>
-                            <asp:BoundField DataField="CreatedAt" HeaderText="Registration Date" DataFormatString="{0:dd MMM yyyy, hh:mm tt}" />
-                        </Columns>
-                    </asp:GridView>
+        <asp:Label ID="lblMessage" runat="server" CssClass="alert d-block rounded-3 shadow-sm mb-4 d-print-none" Visible="false"></asp:Label>
+
+        <div class="row g-4">
+            
+            <div class="col-lg-12">
+                <div class="card shadow-sm border-0 rounded-4 mb-2">
+                    <div class="card-header bg-white border-bottom border-0 pt-4 px-4 pb-3 fw-bold text-dark d-flex align-items-center">
+                        <i class="fas fa-book-open text-primary me-2"></i> Course Interaction & Popularity
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <asp:GridView ID="gvCourseReport" runat="server" CssClass="table table-hover align-middle mb-0 border-bottom-0" 
+                                AutoGenerateColumns="False" GridLines="None">
+                                <HeaderStyle CssClass="table-light text-muted small fw-semibold text-uppercase" />
+                                <Columns>
+                                    <asp:BoundField DataField="Title" HeaderText="Course Title" ItemStyle-CssClass="fw-semibold text-dark ps-4 border-light" HeaderStyle-CssClass="ps-4 py-3 border-bottom-0" />
+                                    <asp:TemplateField HeaderText="Category" ItemStyle-CssClass="border-light" HeaderStyle-CssClass="py-3 border-bottom-0">
+                                        <ItemTemplate>
+                                            <span class="badge bg-secondary rounded-pill px-2 py-1"><%# Eval("Category") %></span>
+                                        </ItemTemplate>
+                                    </asp:TemplateField>
+                                    <asp:BoundField DataField="Instructor" HeaderText="Instructor" ItemStyle-CssClass="text-secondary border-light" HeaderStyle-CssClass="py-3 border-bottom-0" />
+                                    <asp:BoundField DataField="TotalCompletions" HeaderText="Total Interactions" ItemStyle-CssClass="fw-bold text-primary border-light" HeaderStyle-CssClass="py-3 border-bottom-0" />
+                                </Columns>
+                                <EmptyDataTemplate>
+                                    <div class="text-center py-5 text-muted">
+                                        <i class="fas fa-chart-bar fs-1 opacity-50 mb-3"></i>
+                                        <h5 class="fw-semibold text-dark">No course data</h5>
+                                        <p class="mb-0">There is not enough data to generate this report yet.</p>
+                                    </div>
+                                </EmptyDataTemplate>
+                            </asp:GridView>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
 
+            <div class="col-lg-12">
+                <div class="card shadow-sm border-0 rounded-4 mb-2">
+                    <div class="card-header bg-white border-bottom border-0 pt-4 px-4 pb-3 fw-bold text-dark d-flex align-items-center">
+                        <i class="fas fa-check-double text-success me-2"></i> Student Quiz Performance
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <asp:GridView ID="gvQuizResults" runat="server" CssClass="table table-hover align-middle mb-0 border-bottom-0" 
+                                AutoGenerateColumns="False" GridLines="None">
+                                <HeaderStyle CssClass="table-light text-muted small fw-semibold text-uppercase" />
+                                <Columns>
+                                    <asp:BoundField DataField="StudentName" HeaderText="Student" ItemStyle-CssClass="fw-semibold text-dark ps-4 border-light" HeaderStyle-CssClass="ps-4 py-3 border-bottom-0" />
+                                    <asp:BoundField DataField="QuizTitle" HeaderText="Quiz Title" ItemStyle-CssClass="text-secondary border-light" HeaderStyle-CssClass="py-3 border-bottom-0" />
+                                    <asp:TemplateField HeaderText="Score" ItemStyle-CssClass="border-light" HeaderStyle-CssClass="py-3 border-bottom-0">
+                                        <ItemTemplate>
+                                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-1"><%# Eval("Score") %></span>
+                                        </ItemTemplate>
+                                    </asp:TemplateField>
+                                    <asp:BoundField DataField="AttemptDate" HeaderText="Attempted On" DataFormatString="{0:dd MMM yyyy, hh:mm tt}" ItemStyle-CssClass="text-muted small border-light" HeaderStyle-CssClass="py-3 border-bottom-0" />
+                                </Columns>
+                                <EmptyDataTemplate>
+                                    <div class="text-center py-5 text-muted">
+                                        <i class="fas fa-clipboard-list fs-1 opacity-50 mb-3"></i>
+                                        <h5 class="fw-semibold text-dark">No quiz results found</h5>
+                                        <p class="mb-0">Students haven't completed any quizzes yet.</p>
+                                    </div>
+                                </EmptyDataTemplate>
+                            </asp:GridView>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-12">
+                <div class="card shadow-sm border-0 rounded-4">
+                    <div class="card-header bg-white border-bottom border-0 pt-4 px-4 pb-3 fw-bold text-dark d-flex align-items-center">
+                        <i class="fas fa-user-clock text-info me-2"></i> Recently Registered Users
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <asp:GridView ID="gvRecentUsers" runat="server" CssClass="table table-hover align-middle mb-0 border-bottom-0" 
+                                AutoGenerateColumns="False" GridLines="None">
+                                <HeaderStyle CssClass="table-light text-muted small fw-semibold text-uppercase" />
+                                <Columns>
+                                    <asp:BoundField DataField="Username" HeaderText="Username" ItemStyle-CssClass="fw-semibold text-dark ps-4 border-light" HeaderStyle-CssClass="ps-4 py-3 border-bottom-0" />
+                                    <asp:BoundField DataField="FullName" HeaderText="Full Name" ItemStyle-CssClass="text-secondary border-light" HeaderStyle-CssClass="py-3 border-bottom-0" />
+                                    <asp:TemplateField HeaderText="Role" ItemStyle-CssClass="border-light" HeaderStyle-CssClass="py-3 border-bottom-0">
+                                        <ItemTemplate>
+                                            <span class="badge bg-secondary rounded-pill px-2 py-1"><%# Eval("Role") %></span>
+                                        </ItemTemplate>
+                                    </asp:TemplateField>
+                                    <asp:BoundField DataField="CreatedAt" HeaderText="Registration Date" DataFormatString="{0:dd MMM yyyy, hh:mm tt}" ItemStyle-CssClass="text-muted small border-light" HeaderStyle-CssClass="py-3 border-bottom-0" />
+                                </Columns>
+                                <EmptyDataTemplate>
+                                    <div class="text-center py-5 text-muted">
+                                        <i class="fas fa-users fs-1 opacity-50 mb-3"></i>
+                                        <h5 class="fw-semibold text-dark">No user data</h5>
+                                        <p class="mb-0">There are no recently registered users.</p>
+                                    </div>
+                                </EmptyDataTemplate>
+                            </asp:GridView>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
     </div>
 
     <style>
-        .border-top-primary { border-top: 4px solid #0d6efd !important; }
-        .border-top-info { border-top: 4px solid #0dcaf0 !important; }
-        
-        /* Hide buttons and breadcrumbs when printing the report */
         @media print {
-            .navbar, .breadcrumb, button, .footer { display: none !important; }
-            .card { border: 1px solid #ddd !important; box-shadow: none !important; }
+            body { background-color: #fff; }
+            .d-print-none { display: none !important; }
+            .card { border: 1px solid #ddd !important; box-shadow: none !important; margin-bottom: 2rem; }
+            .card-header { background-color: #f8f9fa !important; border-bottom: 1px solid #ddd !important; }
+            .badge { border: 1px solid #6c757d; color: #000 !important; background-color: transparent !important; }
         }
     </style>
 </asp:Content>
