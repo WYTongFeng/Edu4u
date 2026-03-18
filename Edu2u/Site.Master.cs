@@ -7,38 +7,38 @@ namespace Assignment
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            // Check if the user is currently logged in
+            // Check if the user is currently logged in via Session
             if (Session["UserID"] != null)
             {
-                // User is logged in: Hide guest buttons, show logout and profile name
+                // Hide the Login/Register buttons
                 phLoggedOut.Visible = false;
+                // Show the user's name and Log Off button
                 phLoggedIn.Visible = true;
 
-                // Extract their first name from the Session to display in the navbar
                 if (Session["FullName"] != null)
                 {
-                    string fullName = Session["FullName"].ToString();
-                    string firstName = fullName.Split(' ')[0];
-                    lblUserName.Text = "Hi, " + firstName;
+                    // Always HtmlEncode text from the database to prevent cross-site scripting (XSS)
+                    lblUserName.Text = Server.HtmlEncode(Session["FullName"].ToString().Split(' ')[0]);
                 }
             }
             else
             {
-                // User is a guest: Show login/register buttons
+                // User is not logged in
                 phLoggedOut.Visible = true;
                 phLoggedIn.Visible = false;
             }
         }
 
-        // Event handler for the Logout button
+        // Handle the Logout button click
         protected void btnLogout_Click(object sender, EventArgs e)
         {
-            // 1. Destroy all session data securely
+            // Destroy the user's session securely
             Session.Clear();
             Session.Abandon();
 
-            // 2. Redirect the user back to the login page
-            Response.Redirect("~/LoginPage.aspx");
+            // Redirect them to the login page
+            Response.Redirect("~/LoginPage.aspx", false);
+            Context.ApplicationInstance.CompleteRequest();
         }
     }
 }

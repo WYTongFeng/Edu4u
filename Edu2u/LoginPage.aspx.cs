@@ -30,19 +30,15 @@ namespace Assignment
                 string username = txtUsername.Text.Trim();
                 string password = txtPassword.Text;
 
-                // Hash the inputted password to compare with the database
-                string hashedPassword = HashPassword(password);
-
                 using (SqlConnection conn = new SqlConnection(connString))
                 {
-                    string query = @"SELECT UserID, Role, IsActive, FullName 
-                                     FROM Users 
-                                     WHERE Username = @Username AND PasswordHash = @PasswordHash";
+                    string query = @"SELECT UserID, Role, IsActive, FullName, PasswordHash 
+                             FROM Users 
+                             WHERE Username = @Username";
 
                     using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@Username", username);
-                        cmd.Parameters.AddWithValue("@PasswordHash", hashedPassword);
 
                         try
                         {
@@ -51,48 +47,83 @@ namespace Assignment
                             {
                                 if (reader.Read())
                                 {
-                                    bool isActive = Convert.ToBoolean(reader["IsActive"]);
+                                    // 1. Check if the Account is Active
+                                    bool isActive = false;
+                                    if (reader["IsActive"] != DBNull.Value)
+                                    {
+                                        isActive = Convert.ToBoolean(reader["IsActive"]);
+                                    }
 
                                     if (!isActive)
                                     {
-                                        ShowMessage("This account has been disabled. Please contact an administrator.", false);
+                                        ShowMessage("DEBUG ERROR: Your account is in the database, but IsActive is False or NULL.", false);
                                         return;
                                     }
 
-                                    // Account is valid and active. Set up Session variables.
-                                    Session["UserID"] = reader["UserID"].ToString();
-                                    Session["Username"] = username;
-                                    Session["FullName"] = reader["FullName"].ToString();
-
-                                    string role = reader["Role"].ToString();
-                                    Session["Role"] = role;
-
-                                    // Redirect users to their specific modules based on Role
-                                    switch (role)
+                                    // 2. Test the Password Hash
+                                    string storedHash = reader["PasswordHash"].ToString();
+                                    try
                                     {
-                                        case "Administrator":
-                                            Response.Redirect("AdminDashboard.aspx");
-                                            break;
-                                        case "Educator":
-                                            Response.Redirect("Dashboard.aspx");
-                                            break;
-                                        case "Student":
-                                            Response.Redirect("HomePage.aspx");
-                                            break;
-                                        default:
-                                            Response.Redirect("HomePage.aspx");
-                                            break;
+                                        byte[] hashBytes = Convert.FromBase64String(storedHash);
+
+                                        if (hashBytes.Length != 48)
+                                        {
+                                            ShowMessage($"DEBUG ERROR: Hash length is {hashBytes.Length}. The database might have cut off the end of your password!", false);
+                                            return;
+                                        }
+
+                                        byte[] salt = new byte[16];
+                                        Array.Copy(hashBytes, 0, salt, 0, 16);
+
+                                        using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, 100000, HashAlgorithmName.SHA256))
+                                        {
+                                            byte[] hash = pbkdf2.GetBytes(32);
+                                            bool isMatch = true;
+                                            for (int i = 0; i < 32; i++)
+                                            {
+                                                if (hashBytes[i + 16] != hash[i])
+                                                {
+                                                    isMatch = false;
+                                                    break;
+                                                }
+                                            }
+
+                                            if (isMatch)
+                                            {
+                                                // 3. SUCCESS! Log the user in.
+                                                Session["UserID"] = reader["UserID"].ToString();
+                                                Session["Username"] = username;
+                                                Session["FullName"] = reader["FullName"].ToString();
+
+                                                string role = reader["Role"].ToString();
+                                                Session["Role"] = role;
+
+                                                if (role == "Administrator") Response.Redirect("AdminDashboard.aspx", false);
+                                                else if (role == "Educator") Response.Redirect("Dashboard.aspx", false);
+                                                else Response.Redirect("HomePage.aspx", false);
+
+                                                Context.ApplicationInstance.CompleteRequest();
+                                            }
+                                            else
+                                            {
+                                                ShowMessage("DEBUG ERROR: The passwords do not match.", false);
+                                            }
+                                        }
+                                    }
+                                    catch (FormatException)
+                                    {
+                                        ShowMessage("DEBUG ERROR: The Password in the database is not in valid Base64 format.", false);
                                     }
                                 }
                                 else
                                 {
-                                    ShowMessage("Invalid username or password.", false);
+                                    ShowMessage("DEBUG ERROR: Username not found in the database.", false);
                                 }
                             }
                         }
                         catch (SqlException ex)
                         {
-                            ShowMessage("A database error occurred: " + ex.Message, false);
+                            ShowMessage("DEBUG ERROR: " + ex.Message, false);
                         }
                     }
                 }

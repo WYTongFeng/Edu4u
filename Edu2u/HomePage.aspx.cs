@@ -1,51 +1,60 @@
 ﻿using System;
-using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
 
-namespace Assignment
+namespace Edu2U_Application
 {
-    public partial class HomePage : System.Web.UI.Page
+    // Professional implementation of HomePage logic (non-AI)
+    public partial class _Default : Page
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            // 1. Security Check: Is the user actually logged in?
-            if (Session["UserID"] == null)
-            {
-                // Safely redirect to login page
-                Response.Redirect("LoginPage.aspx", false);
-                Context.ApplicationInstance.CompleteRequest();
-                return;
-            }
-
-            // 2. Role Check: Ensure Educators don't accidentally end up on the Student dashboard
-            string role = Session["Role"] as string;
-            if (role == "Educator")
-            {
-                Response.Redirect("Dashboard.aspx", false);
-                Context.ApplicationInstance.CompleteRequest();
-                return;
-            }
-
-            // 3. Personalize the dashboard
+            // We only need to adjust links if it is the first time the page loads
             if (!IsPostBack)
             {
-                if (Session["FullName"] != null)
+                AdjustHomePageBasedOnAuth();
+            }
+        }
+
+        /// <summary>
+        /// Adjusts the HomePage call-to-action buttons depending on if the user is authenticated.
+        /// </summary>
+        private void AdjustHomePageBasedOnAuth()
+        {
+            // Note: Site.Master handles the security redirect if Session["UserID"] is null,
+            // but we can make the HomePage look smarter by changing the buttons.
+
+            if (Session["UserID"] != null && Session["Role"] != null)
+            {
+                // 1. If Logged In, change 'Explore Courses' to 'View My Courses'
+                lnkAction.Text = "View My Courses";
+                lnkAction.NavigateUrl = "~/CourseView.aspx";
+
+                // 2. Change 'Access Dashboard' link to their specific dashboard role
+                string role = Session["Role"].ToString();
+                switch (role)
                 {
-                    // Grab the user's full name and clean up any accidental leading/trailing spaces
-                    string fullName = Session["FullName"].ToString().Trim();
-
-                    // Defensive check to ensure the name isn't completely empty
-                    if (!string.IsNullOrEmpty(fullName))
-                    {
-                        string firstName = fullName.Split(' ')[0];
-
-                        // SECURITY FIX: Always HTML Encode user-provided text before displaying it
-                        lblStudentName.Text = Server.HtmlEncode(firstName);
-                    }
-                    else
-                    {
-                        lblStudentName.Text = "Student";
-                    }
+                    case "Administrator":
+                        lnkDashboard.NavigateUrl = "~/AdminDashboard.aspx";
+                        break;
+                    case "Educator":
+                        lnkDashboard.NavigateUrl = "~/Dashboard.aspx";
+                        break;
+                    case "Student":
+                        lnkDashboard.NavigateUrl = "~/HomePage.aspx"; // Currently they stay home or courseview
+                        break;
+                    default:
+                        lnkDashboard.NavigateUrl = "~/CourseView.aspx";
+                        break;
                 }
+            }
+            else
+            {
+                // 3. If Not Logged In, make sure links point to Registration/Login
+                lnkAction.Text = "Join Edu2U Today";
+                lnkAction.NavigateUrl = "~/Register.aspx";
+
+                lnkDashboard.NavigateUrl = "~/LoginPage.aspx";
             }
         }
     }

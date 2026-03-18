@@ -39,8 +39,8 @@ namespace Assignment
 
                 using (SqlConnection conn = new SqlConnection(connString))
                 {
-                    string query = @"INSERT INTO Users (Username, PasswordHash, FullName, Email, Role) 
-                                     VALUES (@Username, @PasswordHash, @FullName, @Email, @Role)";
+                    string query = @"INSERT INTO Users (Username, PasswordHash, FullName, Email, Role, IsActive) 
+                                    VALUES (@Username, @PasswordHash, @FullName, @Email, @Role, 1)";
 
                     using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
