@@ -7,29 +7,38 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Edu2U_Application
+namespace Assignment
 {
 
 
-    public partial class _Default
+    public partial class HomePage
     {
 
         /// <summary>
-        /// lnkAction control.
+        /// phGuestView control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink lnkAction;
+        protected global::System.Web.UI.WebControls.PlaceHolder phGuestView;
 
         /// <summary>
-        /// lnkDashboard control.
+        /// phStudentView control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink lnkDashboard;
+        protected global::System.Web.UI.WebControls.PlaceHolder phStudentView;
+
+        /// <summary>
+        /// lblStudentName control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblStudentName;
     }
 }

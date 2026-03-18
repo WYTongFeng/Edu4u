@@ -99,11 +99,24 @@
             color: white;
         }
 
+        /* Sticky Footer CSS */
+        html, body {
+            height: 100%;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .main-content-wrapper {
+            flex: 1 0 auto; /* This forces the content to push the footer down */
+        }
         .footer-custom {
-            background-color: #333;
-            color: white;
-            padding: 3rem 0;
-            margin-top: 3rem;
+            background-color: #1a1a1a; /* Professional dark gray */
+            color: #d1d1d1;
+            padding: 2.5rem 0 1.5rem 0;
+            margin-top: auto; 
+            width: 100%;
         }
     </style>
 </head>
@@ -130,7 +143,7 @@
         <%-- Updated Navigation Bar (Standard non-AI layout) --%>
         <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
             <div class="container-fluid">
-                <a class="navbar-brand" runat="server" href="~/">
+                <a class="navbar-brand" runat="server" href="~/HomePage.aspx">
                     <i class="fas fa-graduation-cap me-2"></i>Edu2U
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -138,8 +151,8 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav me-auto">
-                        <li class="nav-item"><a class="nav-link" runat="server" href="~/">Home</a></li>
-                        <li class="nav-item"><a class="nav-link" runat="server" href="~/CourseView.aspx">Courses</a></li>
+                        <li class="nav-item"><a class="nav-link" runat="server" href="~/HomePage.aspx">Home</a></li>
+                        <li class="nav-item"><a class="nav-link" runat="server" href="~/CourseList.aspx">Courses</a></li>
                     </ul>
                     
                 <%-- Handle Login/Logout Display --%>
@@ -169,21 +182,20 @@
         </nav>
 
         <%-- Main Content Area --%>
-        <div class="container-fluid p-0">
+        <div class="container-fluid p-0 main-content-wrapper">
             <asp:ContentPlaceHolder ID="MainContent" runat="server">
             </asp:ContentPlaceHolder>
         </div>
 
-        <%-- Updated Footer (Standard non-AI layout) --%>
-        <footer class="footer-custom">
+        <footer class="footer-custom border-top border-primary border-4">
             <div class="container">
                 <div class="row">
-                    <div class="col-md-6">
-                        <h5>Edu2U Platform</h5>
-                        <p class="text-muted">Empowering learning through technology.</p>
+                    <div class="col-md-6 mb-3 mb-md-0">
+                        <h5 class="fw-bold text-white"><i class="fas fa-graduation-cap me-2 text-primary"></i>Edu2U Platform</h5>
+                        <p class="small mb-0">Empowering learning through technology.</p>
                     </div>
-                    <div class="col-md-6 text-md-end">
-                        <p>&copy; <%: DateTime.Now.Year %> - Group 28 Project. All rights reserved.</p>
+                    <div class="col-md-6 text-md-end align-self-end">
+                        <p class="small mb-0">&copy; <%: DateTime.Now.Year %> - Group 28 Project. All rights reserved.</p>
                     </div>
                 </div>
             </div>
