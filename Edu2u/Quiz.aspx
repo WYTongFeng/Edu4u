@@ -8,8 +8,8 @@
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-1">
                         <li class="breadcrumb-item"><a href="HomePage.aspx" class="text-decoration-none">Home</a></li>
-                        <li class="breadcrumb-item"><a href="CourseList.aspx" class="text-decoration-none">Courses</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Quiz</li>
+                        <li class="breadcrumb-item"><a href="QuizList.aspx" class="text-decoration-none">Quizzes</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Take Quiz</li>
                     </ol>
                 </nav>
                 <h2 class="text-primary fw-bold">📝 Knowledge Check</h2>

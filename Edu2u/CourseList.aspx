@@ -21,6 +21,13 @@
 
     <div class="container mt-4 mb-5">
         
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb bg-transparent p-0 mb-4">
+                <li class="breadcrumb-item"><a href="HomePage.aspx" class="text-decoration-none">Home</a></li>
+                <li class="breadcrumb-item active fw-semibold" aria-current="page">Course Catalog</li>
+            </ol>
+        </nav>
+        
         <div class="row mb-4 align-items-center g-3">
             <div class="col-md-7 col-lg-8">
                 <h2 class="text-primary fw-bold mb-0">Browse Learning Materials</h2>

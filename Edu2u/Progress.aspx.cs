@@ -7,15 +7,12 @@ namespace Assignment
 {
     public partial class Progress : System.Web.UI.Page
     {
-        // Safely retrieve the connection string
         private readonly string connString = ConfigurationManager.ConnectionStrings["Edu2UDB"]?.ConnectionString;
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            // Security Check: Only logged-in users can view progress
             if (Session["UserID"] == null)
             {
-                // Safely redirect to login page
                 Response.Redirect("LoginPage.aspx", false);
                 Context.ApplicationInstance.CompleteRequest();
                 return;
@@ -23,64 +20,96 @@ namespace Assignment
 
             if (!IsPostBack)
             {
-                LoadStudentProgress();
+                LoadAllProgress();
             }
         }
 
-        private void LoadStudentProgress()
+        private void LoadAllProgress()
         {
             int userId = Convert.ToInt32(Session["UserID"]);
 
             using (SqlConnection conn = new SqlConnection(connString))
             {
-                // Join the StudentProgress table with the Courses table to get readable details
-                string query = @"
-                    SELECT c.Title, c.Category, c.Instructor, p.CompletedAt 
-                    FROM StudentProgress p
-                    INNER JOIN Courses c ON p.CourseID = c.CourseID
-                    WHERE p.UserID = @UserID
-                    ORDER BY p.CompletedAt DESC";
-
-                using (SqlCommand cmd = new SqlCommand(query, conn))
+                try
                 {
-                    cmd.Parameters.AddWithValue("@UserID", userId);
+                    conn.Open();
 
-                    try
+                    // --- 1. LOAD COURSE MATERIAL PROGRESS ---
+                    string courseQuery = @"
+                        SELECT c.Title, c.Category, c.Instructor, p.CompletedAt 
+                        FROM StudentProgress p
+                        INNER JOIN Courses c ON p.CourseID = c.CourseID
+                        WHERE p.UserID = @UserID
+                        ORDER BY p.CompletedAt DESC";
+
+                    using (SqlCommand cmdCourse = new SqlCommand(courseQuery, conn))
                     {
-                        using (SqlDataAdapter sda = new SqlDataAdapter(cmd))
+                        cmdCourse.Parameters.AddWithValue("@UserID", userId);
+                        using (SqlDataAdapter sdaCourse = new SqlDataAdapter(cmdCourse))
                         {
-                            DataTable dt = new DataTable();
-                            sda.Fill(dt);
+                            DataTable dtCourse = new DataTable();
+                            sdaCourse.Fill(dtCourse);
 
-                            // Update the big number card
-                            lblTotalCompleted.Text = dt.Rows.Count.ToString();
+                            lblTotalCompleted.Text = dtCourse.Rows.Count.ToString();
 
-                            if (dt.Rows.Count > 0)
+                            if (dtCourse.Rows.Count > 0)
                             {
-                                rptProgress.DataSource = dt;
+                                rptProgress.DataSource = dtCourse;
                                 rptProgress.DataBind();
-
                                 rptProgress.Visible = true;
-                                pnlNoProgress.Visible = false; // Updated to match the Panel ID
+                                pnlNoProgress.Visible = false;
                             }
                             else
                             {
                                 rptProgress.Visible = false;
-                                pnlNoProgress.Visible = true; // Updated to match the Panel ID
+                                pnlNoProgress.Visible = true;
                             }
                         }
                     }
-                    catch (SqlException)
-                    {
-                        // STABILITY FIX: Prevent app crash if database goes offline
-                        rptProgress.Visible = false;
 
-                        // Fallback UI adjustments
-                        lblTotalCompleted.Text = "Error";
-                        // Note: In a full app, you might want a specific error panel, but for now, 
-                        // forcing the empty state panel to show is a safe fallback.
-                        pnlNoProgress.Visible = true;
+                    // --- 2. LOAD QUIZ RESULTS ---
+                    string quizQuery = @"
+                        SELECT c.Title, c.Category, q.Score, q.TotalQuestions 
+                        FROM QuizResults q
+                        INNER JOIN Courses c ON q.CourseID = c.CourseID
+                        WHERE q.UserID = @UserID";
+
+                    using (SqlCommand cmdQuiz = new SqlCommand(quizQuery, conn))
+                    {
+                        cmdQuiz.Parameters.AddWithValue("@UserID", userId);
+                        using (SqlDataAdapter sdaQuiz = new SqlDataAdapter(cmdQuiz))
+                        {
+                            DataTable dtQuiz = new DataTable();
+                            sdaQuiz.Fill(dtQuiz);
+
+                            lblTotalQuizzes.Text = dtQuiz.Rows.Count.ToString();
+
+                            if (dtQuiz.Rows.Count > 0)
+                            {
+                                rptQuizProgress.DataSource = dtQuiz;
+                                rptQuizProgress.DataBind();
+                                rptQuizProgress.Visible = true;
+                                pnlNoQuizProgress.Visible = false;
+                            }
+                            else
+                            {
+                                rptQuizProgress.Visible = false;
+                                pnlNoQuizProgress.Visible = true;
+                            }
+                        }
                     }
+                }
+                catch (SqlException)
+                {
+                    // Fallback UI in case of database error
+                    lblTotalCompleted.Text = "Error";
+                    lblTotalQuizzes.Text = "Error";
+
+                    rptProgress.Visible = false;
+                    pnlNoProgress.Visible = true;
+
+                    rptQuizProgress.Visible = false;
+                    pnlNoQuizProgress.Visible = true;
                 }
             }
         }

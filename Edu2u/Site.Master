@@ -153,6 +153,7 @@
                     <ul class="navbar-nav me-auto">
                         <li class="nav-item"><a class="nav-link" runat="server" href="~/HomePage.aspx">Home</a></li>
                         <li class="nav-item"><a class="nav-link" runat="server" href="~/CourseList.aspx">Courses</a></li>
+                        <li class="nav-item"><a class="nav-link" runat="server" href="~/QuizList.aspx">Quizzes</a></li>
                     </ul>
                     
                 <%-- Handle Login/Logout Display --%>

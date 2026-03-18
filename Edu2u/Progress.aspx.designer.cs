@@ -24,6 +24,15 @@ namespace Assignment
         protected global::System.Web.UI.WebControls.Label lblTotalCompleted;
 
         /// <summary>
+        /// lblTotalQuizzes control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblTotalQuizzes;
+
+        /// <summary>
         /// rptProgress control.
         /// </summary>
         /// <remarks>
@@ -40,5 +49,23 @@ namespace Assignment
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Panel pnlNoProgress;
+
+        /// <summary>
+        /// rptQuizProgress control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptQuizProgress;
+
+        /// <summary>
+        /// pnlNoQuizProgress control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlNoQuizProgress;
     }
 }

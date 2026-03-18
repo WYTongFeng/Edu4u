@@ -49,8 +49,7 @@
                         <iframe id="pdfViewer" runat="server" title="Course Material PDF Viewer" style="width: 100%; height: 75vh; border: none; display: block;" allowfullscreen></iframe>
                     </div>
                     <div class="card-footer bg-white text-center">
-                        <asp:Button ID="btnComplete" runat="server" Text="Mark as Completed" CssClass="btn btn-success me-2" OnClick="btnComplete_Click" />
-                        <a href='Quiz.aspx?id=<%= Request.QueryString["id"] %>' class="btn btn-outline-primary">Take Course Quiz</a>
+                        <asp:Button ID="btnComplete" runat="server" Text="Mark as Completed" CssClass="btn btn-success" OnClick="btnComplete_Click" />
                     </div>
                 </div>
             </div>

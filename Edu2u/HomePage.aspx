@@ -63,7 +63,7 @@
 
             <div class="row g-4">
                 
-                <div class="col-md-4">
+                <div class="col-md-6 col-lg-3">
                     <div class="card h-100 shadow-sm border-0 rounded-4 student-card">
                         <div class="card-body p-4 d-flex flex-column">
                             <div class="icon-circle bg-primary bg-opacity-10 text-primary mb-4">
@@ -76,7 +76,20 @@
                     </div>
                 </div>
 
-                <div class="col-md-4">
+                <div class="col-md-6 col-lg-3">
+                    <div class="card h-100 shadow-sm border-0 rounded-4 student-card">
+                        <div class="card-body p-4 d-flex flex-column">
+                            <div class="icon-circle bg-info bg-opacity-10 text-info mb-4">
+                                <i class="fas fa-pencil-alt fs-4"></i>
+                            </div>
+                            <h4 class="card-title fw-bold">Take a Quiz</h4>
+                            <p class="card-text text-muted flex-grow-1">Test your understanding of the materials by taking interactive topic quizzes.</p>
+                            <a href="QuizList.aspx" class="text-decoration-none fw-bold text-info mt-3 stretched-link">View Quizzes <i class="fas fa-arrow-right ms-2 fs-6"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-3">
                     <div class="card h-100 shadow-sm border-0 rounded-4 student-card">
                         <div class="card-body p-4 d-flex flex-column">
                             <div class="icon-circle bg-success bg-opacity-10 text-success mb-4">
@@ -89,14 +102,14 @@
                     </div>
                 </div>
 
-                <div class="col-md-4">
+                <div class="col-md-6 col-lg-3">
                     <div class="card h-100 shadow-sm border-0 rounded-4 student-card">
                         <div class="card-body p-4 d-flex flex-column">
                             <div class="icon-circle bg-warning bg-opacity-10 text-warning mb-4">
                                 <i class="fas fa-user-shield fs-4"></i>
                             </div>
                             <h4 class="card-title fw-bold">My Profile</h4>
-                            <p class="card-text text-muted flex-grow-1">Update your personal account details, change your password, and manage security settings.</p>
+                            <p class="card-text text-muted flex-grow-1">Update your personal account details, change password, and manage settings.</p>
                             <a href="Profile.aspx" class="text-decoration-none fw-bold text-dark mt-3 stretched-link">Manage Account <i class="fas fa-arrow-right ms-2 fs-6"></i></a>
                         </div>
                     </div>

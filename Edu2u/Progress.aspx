@@ -3,64 +3,71 @@
 <asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="server">
     <div class="container mt-4 mb-5">
         
-        <div class="row mb-4">
-            <div class="col-12">
-                <h2 class="text-success fw-bold d-flex align-items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-graph-up-arrow me-2" viewBox="0 0 16 16">
-                      <path fill-rule="evenodd" d="M0 0h1v15h15v1H0zm10 3.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V4.9l-3.613 4.417a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61L13.445 4H10.5a.5.5 0 0 1-.5-.5"/>
-                    </svg>
-                    My Learning Progress
-                </h2>
-                <p class="text-muted mt-1">Track your achievements and review the courses you have completed.</p>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb bg-transparent p-0 mb-4">
+                <li class="breadcrumb-item"><a href="HomePage.aspx" class="text-decoration-none">Home</a></li>
+                <li class="breadcrumb-item active fw-semibold" aria-current="page">My Progress</li>
+            </ol>
+        </nav>
+
+        <div class="d-flex align-items-center mb-5">
+            <div class="icon-circle bg-success bg-opacity-10 text-success me-3">
+                <i class="fas fa-chart-pie fs-3"></i>
+            </div>
+            <div>
+                <h2 class="fw-bold mb-1">Learning Progress</h2>
+                <p class="text-muted mb-0">Track your module completions and assessment scores.</p>
             </div>
         </div>
 
-        <div class="row mb-4">
-            <div class="col-md-5 col-lg-4">
-                <div class="card text-white shadow-sm border-0 rounded-3" style="background: linear-gradient(135deg, #198754 0%, #146c43 100%);">
-                    <div class="card-body text-center py-4">
+        <div class="row mb-5 g-4">
+            <div class="col-md-6">
+                <div class="card text-white shadow-sm border-0 rounded-4 h-100 progress-card" style="background: linear-gradient(135deg, #198754 0%, #146c43 100%);">
+                    <div class="card-body text-center py-4 d-flex flex-column justify-content-center">
                         <h1 class="display-3 fw-bold mb-0">
                             <asp:Label ID="lblTotalCompleted" runat="server" Text="0"></asp:Label>
                         </h1>
-                        <h5 class="mt-2 mb-0 fw-light opacity-75">Total Courses Completed</h5>
+                        <h5 class="mt-2 mb-0 fw-light opacity-75">Modules Completed</h5>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card text-white shadow-sm border-0 rounded-4 h-100 progress-card" style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);">
+                    <div class="card-body text-center py-4 d-flex flex-column justify-content-center">
+                        <h1 class="display-3 fw-bold mb-0">
+                            <asp:Label ID="lblTotalQuizzes" runat="server" Text="0"></asp:Label>
+                        </h1>
+                        <h5 class="mt-2 mb-0 fw-light opacity-75">Assessments Completed</h5>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
-            <div class="card-header bg-white fw-bold py-3 d-flex align-items-center border-bottom">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-award text-warning me-2" viewBox="0 0 16 16">
-                  <path d="M9.669.864 8 0 6.331.864l-1.858.282-.842 1.68-1.337 1.32L2.6 6l-.306 1.854 1.337 1.32.842 1.68 1.858.282L8 12l1.669-.864 1.858-.282.842-1.68 1.337-1.32L13.4 6l.306-1.854-1.337-1.32-.842-1.68zm1.196 1.193.684 1.365 1.086 1.072L12.387 6l.248 1.506-1.086 1.072-.684 1.365-1.51.229L8 10.874l-1.355-.702-1.51-.229-.684-1.365-1.086-1.072L3.614 6l-.25-1.506 1.087-1.072.684-1.365 1.51-.229L8 1.126l1.356.702z"/>
-                  <path d="M4 11.794V16l4-1 4 1v-4.206l-2.018.306L8 13.126 6.018 12.1z"/>
-                </svg>
-                Completion History
-            </div>
+        <h4 class="fw-bold mb-3"><i class="fas fa-book-reader text-success me-2"></i> Module History</h4>
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden mb-5">
             <div class="card-body p-0">
-                
                 <asp:Repeater ID="rptProgress" runat="server">
                     <HeaderTemplate>
                         <div class="table-responsive">
-                            <table class="table table-hover mb-0 align-middle">
+                            <table class="table table-hover mb-0 align-middle border-bottom-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th class="ps-4 py-3">Course Title</th>
-                                        <th class="py-3">Category</th>
-                                        <th class="py-3">Instructor</th>
-                                        <th class="py-3">Completion Date</th>
+                                        <th class="ps-4 py-3 border-bottom-0">Module Title</th>
+                                        <th class="py-3 border-bottom-0">Category</th>
+                                        <th class="py-3 border-bottom-0">Instructor</th>
+                                        <th class="py-3 border-bottom-0">Completion Date</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                     </HeaderTemplate>
                     <ItemTemplate>
                         <tr>
-                            <td class="ps-4 fw-semibold text-dark"><%# Eval("Title") %></td>
-                            <td><span class="badge bg-secondary px-2 py-1"><%# Eval("Category") %></span></td>
-                            <td class="text-muted"><%# Eval("Instructor") %></td>
-                            <td class="text-success fw-medium">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill me-1 mb-1" viewBox="0 0 16 16">
-                                  <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
-                                </svg>
+                            <td class="ps-4 fw-semibold text-dark border-light"><%# Eval("Title") %></td>
+                            <td class="border-light"><span class="badge bg-secondary px-2 py-1 rounded-pill"><%# Eval("Category") %></span></td>
+                            <td class="text-muted border-light"><%# Eval("Instructor") %></td>
+                            <td class="text-success fw-medium border-light">
+                                <i class="fas fa-check-circle me-1"></i>
                                 <%# Convert.ToDateTime(Eval("CompletedAt")).ToString("dd MMM yyyy, hh:mm tt") %>
                             </td>
                         </tr>
@@ -73,17 +80,72 @@
                 </asp:Repeater>
 
                 <asp:Panel ID="pnlNoProgress" runat="server" CssClass="text-center text-muted w-100 d-block py-5 bg-light" Visible="false">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-journal-x mb-3 text-secondary opacity-50" viewBox="0 0 16 16">
-                      <path fill-rule="evenodd" d="M6.146 6.146a.5.5 0 0 1 .708 0L8 7.293l1.146-1.147a.5.5 0 1 1 .708.708L8.707 8l1.147 1.146a.5.5 0 0 1-.708.708L8 8.707 6.854 9.854a.5.5 0 0 1-.708-.708L7.293 8 6.146 6.854a.5.5 0 0 1 0-.708z"/>
-                      <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2z"/>
-                      <path d="M1 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 3v-.5a.5.5 0 0 1 1 0V8h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 3v-.5a.5.5 0 0 1 1 0v.5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1z"/>
-                    </svg>
-                    <h4 class="mb-3 fw-semibold text-dark">You haven't completed any courses yet!</h4>
-                    <a href="CourseList.aspx" class="btn btn-primary px-4">Browse Courses</a>
+                    <i class="fas fa-folder-open fs-1 text-muted opacity-50 mb-3"></i>
+                    <h5 class="mb-1 fw-semibold text-dark">No modules completed yet</h5>
+                    <p class="mb-0">Head over to the course catalog to start learning.</p>
                 </asp:Panel>
+            </div>
+        </div>
 
+        <h4 class="fw-bold mb-3"><i class="fas fa-clipboard-check text-primary me-2"></i> Assessment Results</h4>
+        <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+            <div class="card-body p-0">
+                <asp:Repeater ID="rptQuizProgress" runat="server">
+                    <HeaderTemplate>
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0 align-middle border-bottom-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="ps-4 py-3 border-bottom-0">Assessment Title</th>
+                                        <th class="py-3 border-bottom-0">Category</th>
+                                        <th class="py-3 border-bottom-0">Score Achieved</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    </HeaderTemplate>
+                    <ItemTemplate>
+                        <tr>
+                            <td class="ps-4 fw-semibold text-dark border-light"><%# Eval("Title") %></td>
+                            <td class="border-light"><span class="badge bg-secondary px-2 py-1 rounded-pill"><%# Eval("Category") %></span></td>
+                            <td class="fw-bold text-primary border-light">
+                                <%# Eval("Score") %> / <%# Eval("TotalQuestions") %>
+                            </td>
+                        </tr>
+                    </ItemTemplate>
+                    <FooterTemplate>
+                                </tbody>
+                            </table>
+                        </div>
+                    </FooterTemplate>
+                </asp:Repeater>
+
+                <asp:Panel ID="pnlNoQuizProgress" runat="server" CssClass="text-center text-muted w-100 d-block py-5 bg-light" Visible="false">
+                    <i class="fas fa-tasks fs-1 text-muted opacity-50 mb-3"></i>
+                    <h5 class="mb-1 fw-semibold text-dark">No assessments taken yet</h5>
+                    <p class="mb-0">Test your knowledge by completing a module assessment.</p>
+                </asp:Panel>
             </div>
         </div>
 
     </div>
+
+    <style>
+        .icon-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .progress-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .progress-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 .5rem 1.5rem rgba(0,0,0,.15)!important;
+        }
+    </style>
 </asp:Content>

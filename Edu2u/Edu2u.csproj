@@ -131,6 +131,7 @@
     <Content Include="Profile.aspx" />
     <Content Include="Progress.aspx" />
     <Content Include="Quiz.aspx" />
+    <Content Include="QuizList.aspx" />
     <Content Include="Register.aspx" />
     <Content Include="Report.aspx" />
     <Content Include="Scripts\bootstrap.bundle.js" />
@@ -293,6 +294,13 @@
     </Compile>
     <Compile Include="Quiz.aspx.designer.cs">
       <DependentUpon>Quiz.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="QuizList.aspx.cs">
+      <DependentUpon>QuizList.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="QuizList.aspx.designer.cs">
+      <DependentUpon>QuizList.aspx</DependentUpon>
     </Compile>
     <Compile Include="Register.aspx.cs">
       <DependentUpon>Register.aspx</DependentUpon>
